@@ -1,7 +1,7 @@
+import pymssql
 from flask import Flask, jsonify
 from flask import request
 
-import pyodbc
 import pandas as pd
 
 app = Flask(__name__)
@@ -16,8 +16,10 @@ def get_user_data(user_id):
     database = 'EntertainmentPlanner'
     username = 'nodus'
     password = 'Azure1.5.3'
-    cnxn = pyodbc.connect(
-        'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+    # cnxn = pyodbc.connect(
+    #     'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+    cnxn = pymssql.connect(host=server, user=username, password=password, database=database)
+
     cursor = cnxn.cursor()
     # select 26 rows from SQL table to insert in dataframe.
     query = "exec Get_User_Suppliers_Mood " + str(user_id) + ""
@@ -83,6 +85,6 @@ def index():
 
 
 if __name__ == '__main__':
-
+    get_user_data(103)
     app.debug=True
     app.run()
