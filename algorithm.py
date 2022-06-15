@@ -72,10 +72,7 @@ def train_save_model(file_name):
 def load_model(file_name):
     return tf.keras.models.load_model(file_name)
 
-# function to replace
-def get_pers_traits_seq(user_id):
-    pass
-
+# use this to obtain user personality trait table
 def model_predict(model, user_df):
     model_inp = tf.keras.preprocessing.sequence.pad_sequences(user_df[us_columns].to_numpy().astype(np.float64),
         maxlen=MAX_SEQUENCE, padding='pre', truncating='post', dtype=np.float64)
