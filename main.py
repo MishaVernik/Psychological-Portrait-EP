@@ -1,13 +1,14 @@
 from flask import Flask, jsonify
 from flask import request
-import pymssql
+
+import pyodbc
+import pandas as pd
 
 app = Flask(__name__)
 
 
 def get_user_data(user_id):
-    import pyodbc
-    import pandas as pd
+
     # Some other example server values are
     # server = 'localhost\sqlexpress' # for a named instance
     # server = 'myserver,port' # to specify an alternate port
