@@ -13,6 +13,7 @@ from sklearn.model_selection import train_test_split
 BATCH_SIZE = 1
 MAX_SEQUENCE = 10
 us_columns = ['Fun', 'Intellectual', 'Sport', 'Relax', 'Extreme', 'Calm', 'Creative', 'Romantic']
+MODEL_NAME = "ml-0001"
 
 
 def create_model():
@@ -88,15 +89,16 @@ def load_model(file_name):
 
 # use this to obtain user personality trait table
 def model_predict(model, user_df):
-    model_inp = tf.keras.preprocessing.sequence.pad_sequences(user_df[us_columns].to_numpy().astype(np.float64),
+    sel_sequences = user_df[us_columns].to_numpy()
+    model_inp = tf.keras.preprocessing.sequence.pad_sequences(np.array([sel_sequences]).astype(np.float64),
                                                               maxlen=MAX_SEQUENCE, padding='pre', truncating='post',
                                                               dtype=np.float64)
     prediction = model.predict(model_inp)[0]
 
-    us_sum = np.sum(prediction, axis=0)
+    us_sum = np.sum(sel_sequences, axis=0)
     us_sum = us_sum / np.amax(us_sum)
 
-    return np.outer(prediction, us_sum)
+    return np.outer(prediction, us_sum).tolist()
 
 
 def get_user_data(user_id):
@@ -164,39 +166,40 @@ def user(user_id):
     df_user_suppliers_moods = get_user_data(user_id)
 
     # CALL TO THE NERUAL NETWORK
-    # model = create_model()
+    model = create_model()
     #
-    # x_t, y_t = load_training_data()
-    # pers_model = train_save_model("ml-0001")
-    current_model = load_model("ml-0001")
-    model_predict(current_model, df_user_suppliers_moods)
+    x_t, y_t = load_training_data()
+    current_model = train_save_model(MODEL_NAME)
+    #current_model = load_model(MODEL_NAME)
+    
+    result = model_predict(current_model, df_user_suppliers_moods)
+    """
+        result =  {
+     "O": {
+    "value": 0.12,
+      "child": [0.13, 0.42, 0.55, 0.64, 0.5]
+    },
 
-    result =  {
- "O": {
-"value": 0.12,
-  "child": [0.13, 0.42, 0.55, 0.64, 0.5]
-},
+     "C": {
+    "value": 0.12,
+      "child": [0.13, 0.42, 0.55, 0.64, 0.5]
+    },
 
- "C": {
-"value": 0.12,
-  "child": [0.13, 0.42, 0.55, 0.64, 0.5]
-},
+     "E": {
+    "value": 0.36,
+      "child": [0.13, 0.42, 0.55, 0.64, 0.5]
+    },
 
- "E": {
-"value": 0.36,
-  "child": [0.13, 0.42, 0.55, 0.64, 0.5]
-},
+     "A": {
+    "value": 0.12,
+      "child": [0.13, 0.42, 0.55, 0.64, 0.5]
+    },
 
- "A": {
-"value": 0.12,
-  "child": [0.13, 0.42, 0.55, 0.64, 0.5]
-},
-
- "N": {
-"value": 0.12,
-  "child": [0.13, 0.42, 0.55, 0.64, 0.5]
-}
-}
+     "N": {
+    "value": 0.12,
+      "child": [0.13, 0.42, 0.55, 0.64, 0.5]
+    }
+    }"""
 
     return jsonify(result)
 
