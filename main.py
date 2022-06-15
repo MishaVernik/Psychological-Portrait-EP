@@ -3,6 +3,7 @@ from flask import Flask, jsonify
 from flask import request
 
 import pandas as pd
+from flask_cors import cross_origin
 
 app = Flask(__name__)
 import tensorflow as tf
@@ -146,6 +147,7 @@ def get_user_data(user_id):
 
 
 @app.route('/users/portrait/<user_id>', methods = ['GET', 'POST', 'DELETE'])
+@cross_origin()
 def user(user_id):
     if request.method == 'GET':
         """return the information for <user_id>"""
@@ -172,38 +174,129 @@ def user(user_id):
     current_model = train_save_model(MODEL_NAME)
     #current_model = load_model(MODEL_NAME)
     
-    result = model_predict(current_model, df_user_suppliers_moods)
-    """
-        result =  {
+    model_result = model_predict(current_model, df_user_suppliers_moods)
+
+
+    psy_portrait_matrix = [
+
+        [1, 1, 1, 0, 0.5, 0, 1, 1], # Ideas
+        [1, 1, 1, 0, 0.5, 0, 1, 1], # Fantasy
+        [1, 1, 1, 0, 0.5, 0, 1, 1], # Aesthetic
+        [1, 1, 1, 0, 0.5, 0, 1, 1], #Actions
+        [1, 1, 1, 0, 0.5, 0, 1, 1], # Feelings
+        [1, 1, 1, 0, 0.5, 0, 1, 1], #Values
+
+        [0, 1, 1, 0, 0.5, 1, 0.5, 0.5],  # Competence
+        [0, 1, 0, 0, 0, 1, 0, 0],  # Order
+        [0, 1, 0, 0, 0, 1, 0, 0],  # Dutifulness
+        [0, 1, 0, 0, 0, 1, 1, 0],  # Achieve
+        [0, 1, 0, 0, 0, 1, 1, 0],  # SElf-disc
+        [0, 1, 0, 1, 0, 1, 1, 0],  # Deliberation
+
+        [1, 0.5, 1, 0, 1, 0, 0, 1],  # Gregarious
+        [1, 0.5, 1, 0, 1, 0, 0, 1],  # Assertivness
+        [1, 0.5, 1, 0, 1, 0, 0, 1],  # Activity
+        [1, 0.5, 1, 0, 1, 0, 1, 1],  # Excetement seeking
+        [1, 0.5, 1, 0, 1, 0, 0, 1],  # Positive emotions
+        [1, 0.5, 1, 0, 1, 0, 0, 1],  # Warmth
+
+        [0, 1, 1, 0, 0, 1, 0, 0],  # Trust
+        [0, 1, 0, 0, 0, 1, 1, 1],  # Straghtforwardness
+        [0, 1, 0, 0, 0, 1, 1, 1],  # Altruis
+        [0, 1, 0, 0, 0, 1, 1, 1],  # Compliance
+        [0, 1, 0, 0, 0, 1, 1, 1],  # Modesty
+        [0, 1, 0, 1, 0, 1, 1, 1],  # Tender mindedness
+
+        [0, 0, 0, 1, 0, 1, 0, 0],  # Anxiety
+        [0, 0, 1, 0, 1, 0, 0, 0],  # Angry hostiliyu
+        [0, 0, 0, 0, 0.5, 1, 0, 0],  # Depression
+        [0, 1, 0, 1, 0.5, 1, 1, 0],  # SElf-consciousness
+        [0, 0, 1, 0, 1, 0, 1, 0],  # Impulsiveness
+        [0, 0, 0, 1, 0.5, 1, 1, 0],  # Vulnerability
+    ]
+
+
+    Openess = 0
+    Openess_arr = []
+
+    Consciousness = 0
+    Consciousness_arr = []
+
+    Extraversion = 0
+    Extraversion_arr = []
+
+    Awareness = 0
+    Awareness_arr = []
+
+    Neurotism = 0
+    Neurotism_arr = []
+
+    outer_cnt = 0
+    for i in range(len(psy_portrait_matrix)):
+        if (i % 6 == 0):
+            outer_cnt += 1
+        sum = 0
+        for j in psy_portrait_matrix[i]:
+            sum += psy_portrait_matrix[i][j]
+
+        if (outer_cnt == 1):
+            Openess_arr.append(sum)
+            Openess += sum
+        if (outer_cnt == 2):
+            Consciousness_arr.append(sum)
+            Consciousness += sum
+        if (outer_cnt == 3):
+            Extraversion_arr.append(sum)
+            Extraversion += sum
+        if (outer_cnt == 4):
+            Awareness_arr.append(sum)
+            Awareness += sum
+        if (outer_cnt == 5):
+            Neurotism_arr.append(sum)
+            Neurotism += sum
+
+    # 1 SupplierFirmId
+    # 0 Fun
+    # 1 Intellectual
+    # 2 Sport
+    # 3 Relax
+    # 4 Extreme
+    # 5 Calm
+    # 6 Creative
+    # 7 Romantic
+    #
+    CHUNK_SIZE = 6
+    result =  {
      "O": {
-    "value": 0.12,
-      "child": [0.13, 0.42, 0.55, 0.64, 0.5]
+    "value": Openess / CHUNK_SIZE,
+      "child": Openess_arr
     },
 
      "C": {
-    "value": 0.12,
-      "child": [0.13, 0.42, 0.55, 0.64, 0.5]
+    "value": Consciousness / CHUNK_SIZE,
+      "child": Consciousness_arr
     },
 
      "E": {
-    "value": 0.36,
-      "child": [0.13, 0.42, 0.55, 0.64, 0.5]
+    "value": Extraversion / CHUNK_SIZE,
+      "child": Extraversion_arr
     },
 
      "A": {
-    "value": 0.12,
-      "child": [0.13, 0.42, 0.55, 0.64, 0.5]
+    "value": Awareness / CHUNK_SIZE,
+      "child": Awareness_arr
     },
 
      "N": {
-    "value": 0.12,
-      "child": [0.13, 0.42, 0.55, 0.64, 0.5]
+    "value": Neurotism / CHUNK_SIZE,
+      "child": Neurotism_arr
     }
-    }"""
+    }
 
     return jsonify(result)
 
 @app.route('/')
+@cross_origin()
 def index():
     """ Displays the index page accessible at '/'
     """
