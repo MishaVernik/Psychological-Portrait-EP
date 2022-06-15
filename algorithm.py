@@ -76,9 +76,9 @@ def load_model(file_name):
 def model_predict(model, user_df):
     model_inp = tf.keras.preprocessing.sequence.pad_sequences(user_df[us_columns].to_numpy().astype(np.float64),
         maxlen=MAX_SEQUENCE, padding='pre', truncating='post', dtype=np.float64)
-    prediction = pers_model.predict(model_inp)[0]
+    prediction = model.predict(model_inp)[0]
 
-    us_sum = np.sum(pers_traits_seq, axis=0)
+    us_sum = np.sum(prediction, axis=0)
     us_sum = us_sum / np.amax(us_sum)
 
-    return np.outer(pers_traits_seq, us_sum)
+    return np.outer(prediction, us_sum)
