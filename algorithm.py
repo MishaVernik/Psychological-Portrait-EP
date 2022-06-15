@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 
 BATCH_SIZE = 1
 MAX_SEQUENCE = 10
+us_columns = ['Fun','Intellectual','Sport','Relax','Extreme','Calm','Creative','Romantic']
 
 def create_model():
     alg_model = tf.keras.Sequential()
@@ -34,7 +35,6 @@ def create_model():
     return alg_model
     
 def load_training_data():
-    us_columns = ['Fun','Intellectual','Sport','Relax','Extreme','Calm','Creative','Romantic']
     upt_columns = ['O','C','E','A','N']
 
     us_key = 'UserId'
@@ -76,8 +76,8 @@ def load_model(file_name):
 def get_pers_traits_seq(user_id):
     pass
 
-def model_predict(model, user_id):
-    model_inp = tf.keras.preprocessing.sequence.pad_sequences(np.array([get_pers_traits_seq(user_id)]).astype(np.float64),
+def model_predict(model, user_df):
+    model_inp = tf.keras.preprocessing.sequence.pad_sequences(user_df[us_columns].to_numpy().astype(np.float64),
         maxlen=MAX_SEQUENCE, padding='pre', truncating='post', dtype=np.float64)
     prediction = pers_model.predict(model_inp)[0]
 
