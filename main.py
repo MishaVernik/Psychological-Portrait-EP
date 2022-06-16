@@ -1,11 +1,18 @@
+from urllib import response
+
 import pymssql
 from flask import Flask, jsonify
 from flask import request
 
 import pandas as pd
-from flask_cors import cross_origin
+from flask_cors import cross_origin, CORS
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'the quick brown fox jumps over the lazy   dog'
+app.config['CORS_HEADERS'] = 'Content-Type'
+
+cors = CORS(app)
+
 import tensorflow as tf
 import numpy as np
 import pandas as pd
@@ -147,7 +154,7 @@ def get_user_data(user_id):
 
 
 @app.route('/users/portrait/<user_id>', methods = ['GET', 'POST', 'DELETE'])
-@cross_origin()
+@cross_origin(origin='*',headers='*')
 def user(user_id):
     if request.method == 'GET':
         """return the information for <user_id>"""
@@ -306,7 +313,7 @@ def user(user_id):
       "child": Neurotism_arr
     }
     }
-
+    # response.headers.add('Access-Control-Allow-Origin', '*')
     return jsonify(result)
 
 @app.route('/')
