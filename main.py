@@ -1,6 +1,7 @@
 from urllib import response
 
 import pymssql
+import pyodbc
 from flask import Flask, jsonify
 from flask import request
 
@@ -77,7 +78,7 @@ def load_training_data():
 # use this to create model
 def train_save_model(file_name):
     dataset_inp, dataset_out = load_training_data()
-    train_inp, test_inp, train_out, test_out = train_test_split(dataset_inp, dataset_out, test_size=0.2,
+    train_inp, test_inp, train_out, test_out = train_test_split(dataset_inp, dataset_out, test_size=0.3,
                                                                 random_state=13)
 
     pers_model = create_model()
@@ -118,9 +119,9 @@ def get_user_data(user_id):
     database = 'EntertainmentPlanner'
     username = 'nodus'
     password = 'Azure1.5.3'
-    # cnxn = pyodbc.connect(
-    #     'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
-    cnxn = pymssql.connect(host=server, user=username, password=password, database=database)
+    cnxn = pyodbc.connect(
+         'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+    #cnxn = pymssql.connect(host=server, user=username, password=password, database=database)
 
     cursor = cnxn.cursor()
     # select 26 rows from SQL table to insert in dataframe.
@@ -154,6 +155,28 @@ def get_user_data(user_id):
     # cur.execute("SELECT * FROM persons WHERE salesrep LIKE 'J%'")
 
 
+@app.route('/users', methods = ['GET', 'POST', 'DELETE'])
+@cross_origin(origin='*',headers='*')
+def get_user_ids():
+    server = 'entertainment-planner.database.windows.net'
+    database = 'EntertainmentPlanner'
+    username = 'nodus'
+    password = 'Azure1.5.3'
+    cnxn = pyodbc.connect(
+        'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+    # cnxn = pymssql.connect(host=server, user=username, password=password, database=database)
+
+    cursor = cnxn.cursor()
+    # select 26 rows from SQL table to insert in dataframe.
+    query = "exec Get_User_Ids"
+    df = pd.read_sql(query, cnxn)
+    print(df.head())
+
+    cursor.close()
+    cnxn.close()
+
+    result = { "UserIds" :  df['UserID'].values.tolist() }
+    return jsonify(result)
 
 @app.route('/users/portrait/<user_id>', methods = ['GET', 'POST', 'DELETE'])
 @cross_origin(origin='*',headers='*')
@@ -178,7 +201,7 @@ def user(user_id):
 
     # CALL TO THE NERUAL NETWORK
     model = create_model()
-    #
+    # #
     x_t, y_t = load_training_data()
     current_model = train_save_model(MODEL_NAME)
     #current_model = load_model(MODEL_NAME)
@@ -323,7 +346,7 @@ def user(user_id):
 def index():
     """ Displays the index page accessible at '/'
     """
-    return Flask.render_template('index.html')
+    return jsonify('{"Done" : "True" }')
 
 
 if __name__ == '__main__':
