@@ -128,6 +128,8 @@ def get_user_data(user_id):
     df = pd.read_sql(query, cnxn)
     print(df.head())
 
+    cursor.close()
+    cnxn.close()
     return df
     # Table DATA:
     # 0 UserId
