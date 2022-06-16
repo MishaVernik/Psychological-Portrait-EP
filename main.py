@@ -232,7 +232,7 @@ def user(user_id):
     Neurotism_arr = []
 
     outer_cnt = 0
-    mx = 1000
+    mx = -1000
     for i in range(len(psy_portrait_matrix)):
         if (i % 6 == 0):
             outer_cnt += 1
