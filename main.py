@@ -232,13 +232,14 @@ def user(user_id):
     Neurotism_arr = []
 
     outer_cnt = 0
+    mx = 1000
     for i in range(len(psy_portrait_matrix)):
         if (i % 6 == 0):
             outer_cnt += 1
         sum = 0
         for j in psy_portrait_matrix[i]:
-            sum += psy_portrait_matrix[i][j]
-
+            sum += j
+        mx = max(mx, sum)
         if (outer_cnt == 1):
             Openess_arr.append(sum)
             Openess += sum
@@ -265,6 +266,19 @@ def user(user_id):
     # 6 Creative
     # 7 Romantic
     #
+    Openess /= mx
+    Consciousness /= mx
+    Extraversion /= mx
+    Awareness /= mx
+    Neurotism /= mx
+
+    Openess_arr[:] = [x / mx for x in Openess_arr]
+    Consciousness_arr[:] = [x / mx for x in Consciousness_arr]
+    Extraversion_arr[:] = [x / mx for x in Extraversion_arr]
+    Awareness_arr[:] = [x / mx for x in Awareness_arr]
+    Neurotism_arr[:] = [x / mx for x in Neurotism_arr]
+
+    print(Openess_arr)
     CHUNK_SIZE = 6
     result =  {
      "O": {
