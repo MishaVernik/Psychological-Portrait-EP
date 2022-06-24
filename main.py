@@ -157,6 +157,14 @@ def get_user_data(user_id):
 
 @app.route('/users', methods = ['GET', 'POST', 'DELETE'])
 @cross_origin(origin='*',headers='*')
+def get_user_json_ids():
+    df = get_user_ids()
+    print(df.head())
+
+    result = { "UserIds" :  df['UserID'].values.tolist() }
+    return jsonify(result)
+
+
 def get_user_ids():
     server = 'entertainment-planner.database.windows.net'
     database = 'EntertainmentPlanner'
@@ -165,18 +173,43 @@ def get_user_ids():
     cnxn = pyodbc.connect(
         'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
     # cnxn = pymssql.connect(host=server, user=username, password=password, database=database)
-
     cursor = cnxn.cursor()
     # select 26 rows from SQL table to insert in dataframe.
     query = "exec Get_User_Ids"
     df = pd.read_sql(query, cnxn)
-    print(df.head())
 
     cursor.close()
     cnxn.close()
+    return df
 
-    result = { "UserIds" :  df['UserID'].values.tolist() }
-    return jsonify(result)
+def get_all_user_psy_data():
+    server = 'entertainment-planner.database.windows.net'
+    database = 'EntertainmentPlanner'
+    username = 'nodus'
+    password = 'Azure1.5.3'
+    cnxn = pyodbc.connect(
+        'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+    # cnxn = pymssql.connect(host=server, user=username, password=password, database=database)
+    cursor = cnxn.cursor()
+    # select 26 rows from SQL table to insert in dataframe.
+    query = "exec Get_All_User_Suppliers_Mood"
+    df = pd.read_sql(query, cnxn)
+
+    cursor.close()
+    cnxn.close()
+    return df
+
+@app.route('/users/update_psy_list', methods = ['POST'])
+@cross_origin(origin='*',headers='*')
+def update_UsersSupplierFirmsMoodsList():
+
+    # df = get_user_ids()
+    # global_users = df['UserID'].values.tolist()
+
+    df = get_all_user_psy_data()
+    df.to_csv("test.csv")
+
+
 
 @app.route('/users/portrait/<user_id>', methods = ['GET', 'POST', 'DELETE'])
 @cross_origin(origin='*',headers='*')
@@ -269,8 +302,10 @@ def user(user_id):
         if (i % 6 == 0):
             outer_cnt += 1
         sum = 0
+        inner_index = 0
         for j in psy_portrait_matrix[i]:
-            sum += j
+            sum += j*model_result[outer_cnt - 1][inner_index]
+            inner_index += 1
         mx = max(mx, sum)
         if (outer_cnt == 1):
             Openess_arr.append(sum)
